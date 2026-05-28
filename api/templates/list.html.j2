@@ -1,0 +1,180 @@
+<svg 
+    viewBox="0 0 {{ width }} {{ height }}" 
+    preserveAspectRatio="xMidYMid meet" 
+    style="width: 100%; height: auto; display: block; max-width: {{ width }}px;"
+    xmlns="http://www.w3.org/2000/svg" 
+    xmlns:xlink="http://www.w3.org/1999/xlink">
+
+    <foreignObject width="{{ width }}" height="{{ height }}" x="0" y="0">
+        <div xmlns="http://www.w3.org/1999/xhtml" class="container {% if use_blur_background %}blur-bg{% endif %} {% if blur_is_dark %}blur-dark{% else %}blur-light{% endif %}">
+            <style>
+                :root {
+                    --background-color: #{{ background_color }};
+                    --border-color: #{{ border_color }};
+                    --song-color-1: rgb({{ song_palette[0][0] }}, {{ song_palette[0][1] }}, {{ song_palette[0][2] }});
+                    --song-color-2: rgb({{ song_palette[1][0] }}, {{ song_palette[1][1] }}, {{ song_palette[1][2] }});
+                    
+                    --border-radius: {{ border_radius }}px;
+                    --blur-amount: {{ blur_amount }}px;
+                    --blur-overlay-opacity: {{ blur_overlay_opacity }};
+                }
+
+                * {
+                    box-sizing: border-box;
+                    margin: 0;
+                    padding: 0;
+                }
+
+                .container {
+                    position: relative;
+                    width: 100%;
+                    height: 100%;
+                    border-radius: var(--border-radius);
+                    padding: 16px;
+                    overflow: hidden;
+                    background-color: var(--background-color);
+                    border: 1px solid var(--border-color);
+                }
+
+                .container.blur-bg {
+                    background: transparent;
+                }
+
+                .blur-background { display: none; }
+                .container.blur-bg .blur-background {
+                    display: block;
+                    position: absolute;
+                    top: -20px;
+                    left: -20px;
+                    right: -20px;
+                    bottom: -20px;
+                    z-index: -2;
+                    background-image: url("data:image/png;base64,{{ image }}");
+                    background-size: cover;
+                    background-position: center;
+                    filter: blur(var(--blur-amount)) saturate(1.2);
+                    transform: scale(1.1);
+                }
+
+                .blur-overlay { display: none; }
+                .container.blur-bg .blur-overlay {
+                    display: block;
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    z-index: -1;
+                    border-radius: var(--border-radius);
+                }
+
+                .container.blur-bg.blur-dark .blur-overlay {
+                    background: rgba(0, 0, 0, var(--blur-overlay-opacity));
+                }
+
+                .container.blur-bg.blur-light .blur-overlay {
+                    background: rgba(255, 255, 255, var(--blur-overlay-opacity));
+                }
+
+                .container.blur-bg.blur-dark .text,
+                .container.blur-bg.blur-dark .title {
+                    filter: drop-shadow(0 0 1px rgba(0,0,0,0.9)) drop-shadow(0 0 3px rgba(0,0,0,0.6));
+                }
+
+                .container.blur-bg.blur-light .text,
+                .container.blur-bg.blur-light .title {
+                    filter: brightness(0.55) drop-shadow(0 0 1px rgba(255,255,255,0.9)) drop-shadow(0 0 3px rgba(255,255,255,0.5));
+                }
+
+                div, a {
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+                    text-decoration: none;
+                }
+
+                .title {
+                    font-size: 14px;
+                    font-weight: 700;
+                    margin-bottom: 12px;
+                    background: linear-gradient(125deg, var(--song-color-1), var(--song-color-2));
+                    -webkit-text-fill-color: transparent;
+                    -webkit-background-clip: text;
+                    background-clip: text;
+                    opacity: 0.9;
+                }
+
+                .list {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 8px;
+                }
+
+                .item {
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    height: {{ item_height - 8 }}px;
+                    transition: transform 0.2s;
+                }
+
+                .item:hover {
+                    transform: translateX(4px);
+                }
+
+                .cover {
+                    width: {{ item_height - 8 }}px;
+                    height: {{ item_height - 8 }}px;
+                    border-radius: 4px;
+                    object-fit: cover;
+                    flex-shrink: 0;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+                }
+
+                .info {
+                    flex: 1;
+                    min-width: 0;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                }
+
+                .track-name {
+                    font-size: 14px;
+                    font-weight: 600;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    color: #fff;
+                    margin-bottom: 2px;
+                }
+
+                .artist-name {
+                    font-size: 12px;
+                    font-weight: 400;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    color: #b3b3b3;
+                }
+                
+                .container.blur-bg.blur-light .track-name { color: #121212; }
+                .container.blur-bg.blur-light .artist-name { color: #4d4d4d; }
+            </style>
+
+            <div class="blur-background"></div>
+            <div class="blur-overlay"></div>
+
+            <div class="title">{{ title }}</div>
+            <div class="list">
+                {% for item in items %}
+                <a class="item" href="{{ item.track_url }}" target="_blank">
+                    <img class="cover" src="data:image/png;base64,{{ item.image }}" alt="Cover" />
+                    <div class="info">
+                        <div class="text track-name">{{ item.track_name }}</div>
+                        <div class="text artist-name">{{ item.artist_name }}</div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </foreignObject>
+</svg>

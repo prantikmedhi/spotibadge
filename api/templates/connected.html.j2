@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SpotiBadge — Your Widget</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg-base: #121212;
+      --bg-surface: #181818;
+      --bg-highlight: #1f1f1f;
+      --bg-card: #252525;
+      --text-base: #ffffff;
+      --text-muted: #b3b3b3;
+      --spotify-green: #1ed760;
+      --spotify-green-hover: #36e474;
+      --border-gray: #4d4d4d;
+      --shadow-heavy: rgba(0,0,0,0.5) 0px 8px 24px;
+      --shadow-medium: rgba(0,0,0,0.3) 0px 8px 8px;
+    }
+
+    * { box-sizing: border-box; }
+    
+    body {
+      margin: 0;
+      font-family: "SpotifyMixUI", "CircularSp", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-base);
+      color: var(--text-base);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: inherit; text-decoration: none; transition: color 0.2s; }
+    a:hover { color: var(--text-base); }
+
+    /* Navigation */
+    nav {
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      position: sticky;
+      top: 0;
+      background-color: rgba(18, 18, 18, 0.8);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 1.25rem;
+      letter-spacing: -0.5px;
+    }
+    .brand svg { color: var(--spotify-green); }
+
+    .github-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background-color: var(--bg-highlight);
+      padding: 4px 12px 4px 4px;
+      border-radius: 9999px;
+    }
+    .github-profile img { width: 28px; height: 28px; border-radius: 50%; }
+
+    /* Main Layout */
+    main {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 24px 32px 60px;
+    }
+
+    .header {
+      margin-bottom: 24px;
+      text-align: center;
+    }
+    h1 { font-size: 2.25rem; font-weight: 700; margin: 0 0 4px; letter-spacing: -1px; }
+    .subtitle { color: var(--text-muted); font-size: 1.125rem; }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .panel {
+      background-color: var(--bg-surface);
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: var(--shadow-medium);
+    }
+
+    h2 { font-size: 1.25rem; margin-top: 0; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 700; }
+
+    /* Controls */
+    .controls-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+    .control-item { display: grid; gap: 8px; }
+    label { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    
+    select, input[type="text"] {
+      width: 100%;
+      background-color: var(--bg-highlight);
+      border: 1px solid transparent;
+      border-radius: 4px;
+      padding: 10px;
+      color: var(--text-base);
+      font-size: 0.875rem;
+    }
+
+    .checkbox-group { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+    .checkbox-group input { width: 18px; height: 18px; accent-color: var(--spotify-green); }
+
+    /* Markdown Section */
+    textarea {
+      width: 100%;
+      min-height: 80px;
+      background-color: #000;
+      color: var(--spotify-green);
+      border: 1px solid var(--border-gray);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.875rem;
+      resize: vertical;
+      margin-bottom: 12px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 9999px;
+      font-size: 0.875rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      padding: 12px 24px;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.1s, background-color 0.2s;
+    }
+    .btn:active { transform: scale(0.95); }
+    .btn-primary { background-color: var(--spotify-green); color: #000000; }
+    .btn-primary:hover { background-color: var(--spotify-green-hover); }
+    .btn-outline { background-color: transparent; border: 1px solid var(--border-gray); color: var(--text-base); }
+
+    /* Preview Section */
+    .preview-container {
+      margin-top: 20px;
+      background-color: #000;
+      border-radius: 8px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 200px;
+      overflow: hidden;
+      border: 1px solid var(--border-gray);
+    }
+    .preview-container a {
+      display: block;
+      width: 100%;
+      max-width: 540px;
+      text-align: center;
+    }
+    .preview-container img { width: 100%; max-width: 100%; height: auto; border-radius: 4px; box-shadow: var(--shadow-heavy); display: block; margin: 0 auto; }
+    .preview-error { color: var(--negative-red); font-size: 0.875rem; text-align: center; margin-top: 16px; display: none; }
+
+    .id-badge {
+      display: inline-block;
+      margin-top: 16px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      background-color: var(--bg-highlight);
+      padding: 4px 12px;
+      border-radius: 9999px;
+    }
+    code { font-family: inherit; color: var(--text-base); }
+
+    @media (max-width: 896px) {
+      .grid-2 { grid-template-columns: 1fr; }
+      .controls-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="/" class="brand">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 0C5.37258 0 0 5.37258 0 12C0 18.6274 5.37258 24 12 24C18.6274 24 24 18.6274 24 12C24 5.37258 18.6274 0 12 0ZM17.4859 17.3039C17.2798 17.6394 16.8398 17.7424 16.5043 17.5363C13.6823 15.8118 10.123 15.4199 5.922 16.3789C5.53986 16.466 5.16194 16.2259 5.07483 15.8438C4.98772 15.4616 5.22776 15.0837 5.60991 14.9966C10.2014 13.9472 14.129 14.3948 17.2533 16.3224C17.5888 16.5285 17.6918 16.9685 17.4859 17.3039ZM18.9566 14.0305C18.6874 14.4697 18.1133 14.6062 17.6741 14.337C14.4449 12.3503 9.53177 11.7725 5.71184 12.932C5.22501 13.0797 4.71171 12.8021 4.56401 12.3152C4.41631 11.8284 4.69391 11.3151 5.18074 11.1674C9.53488 9.84576 15.011 10.5103 18.6501 12.7479C19.0893 13.0171 19.2258 13.5912 18.9566 14.0305ZM19.084 10.6695C15.2217 8.3755 8.8354 8.16431 5.12788 9.29065C4.53603 9.47047 3.90384 9.14159 3.72402 8.54974C3.5442 7.95788 3.87308 7.32569 4.46494 7.14587C8.71887 5.85387 15.7721 6.10189 20.218 8.74246C20.7505 9.05872 20.9229 9.74391 20.6066 10.2764C20.2904 10.8088 19.6052 10.9813 19.084 10.6695Z"/>
+      </svg>
+      <span>SpotiBadge</span>
+    </a>
+    <div class="nav-links">
+      <a href="https://github.com/prantikmedhi" target="_blank" class="github-profile">
+        <img src="https://github.com/prantikmedhi.png" alt="prantikmedhi">
+        <span>prantikmedhi</span>
+      </a>
+    </div>
+  </nav>
+
+  <main>
+    <section class="header">
+      <h1>Widget ready.</h1>
+      <p class="subtitle">Connected as <strong>{{ display_name }}</strong>. Customize and copy your badge below.</p>
+    </section>
+
+    <div class="grid-2">
+      <!-- Customization Panel -->
+      <section>
+        <div class="panel">
+          <h2>Customize</h2>
+          
+          <div class="controls-grid">
+            <div class="control-item">
+              <label for="widgetType">Widget Type</label>
+              <select id="widgetType">
+                <option value="now-playing" selected>Now Playing</option>
+                <option value="recently-played">Recently Played</option>
+                <option value="top-track">Top Track</option>
+                <option value="top-artist">Top Artist</option>
+              </select>
+            </div>
+            <div class="control-item" id="timeRangeContainer" style="display: none;">
+              <label for="timeRange">Time Range</label>
+              <select id="timeRange">
+                <option value="short_term" selected>Last 4 Weeks</option>
+                <option value="medium_term">Last 6 Months</option>
+                <option value="long_term">All Time (1 Year)</option>
+              </select>
+            </div>
+            <div class="control-item">
+              <label for="backgroundType">Background Type</label>
+              <select id="backgroundType">
+                <option value="blur_dark" selected>Blur Dark</option>
+                <option value="blur_light">Blur Light</option>
+                <option value="color">Solid Color</option>
+              </select>
+            </div>
+            <div class="control-item">
+              <label for="borderColor">Border Hex</label>
+              <input id="borderColor" type="text" value="ffffff" maxlength="6">
+            </div>
+            <div class="control-item">
+              <label for="backgroundColor">Background Hex</label>
+              <input id="backgroundColor" type="text" value="181414" maxlength="6">
+            </div>
+          </div>
+
+          <div style="display: grid; gap: 16px; margin-top: 24px;">
+            <label class="checkbox-group" for="showStatus">
+              <input id="showStatus" type="checkbox">
+              <span>Show Status Header</span>
+            </label>
+            <label class="checkbox-group" for="compact">
+              <input id="compact" type="checkbox">
+              <span>Compact Mode</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="panel" style="margin-top: 24px;">
+          <h2>README Markdown</h2>
+          <textarea id="markdown" readonly></textarea>
+          <div style="display: flex; gap: 12px;">
+            <button type="button" id="copy" class="btn btn-primary" style="flex: 1;">Copy Markdown</button>
+            <a id="testLink" class="btn btn-outline" href="#" target="_blank">Test Link</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Preview Panel -->
+      <section style="position: sticky; top: 88px;">
+        <div class="panel">
+          <h2>Preview</h2>
+          <div class="preview-container">
+            <a id="previewLink" href="#" target="_blank">
+              <img id="preview-img" src="" alt="SpotiBadge Preview">
+            </a>
+            <div id="preview-error" class="preview-error">
+              Unable to load preview.
+            </div>
+          </div>
+          <div style="text-align: center;">
+            <span class="id-badge">Widget ID: <code>{{ public_id }}</code></span>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer style="margin-top: 80px; padding: 40px 32px; border-top: 1px solid rgba(255, 255, 255, 0.1); text-align: center;">
+    <p style="font-size: 0.875rem; color: var(--text-muted); margin: 0;">
+      Made for music lovers with ❤️ by <span style="color: var(--spotify-green); font-weight: 700;">SpotiBadge</span>
+    </p>
+    <div style="margin-top: 12px; display: flex; justify-content: center; gap: 24px; font-size: 0.75rem; font-weight: 700;">
+      <a href="https://github.com/prantikmedhi/spotibadge" target="_blank" style="color: var(--text-muted);">GITHUB</a>
+      <a href="/" style="color: var(--text-muted);">HOME</a>
+    </div>
+  </footer>
+
+  <script>
+    const baseUrl = window.location.origin;
+    const publicId = "{{ public_id }}";
+    
+    const button = document.querySelector("#copy");
+    const markdown = document.querySelector("#markdown");
+    const preview = document.querySelector("#preview-img");
+    const previewError = document.querySelector("#preview-error");
+    const testLink = document.querySelector("#testLink");
+    const previewLink = document.querySelector("#previewLink");
+    
+    const controls = {
+      widgetType: document.querySelector("#widgetType"),
+      timeRange: document.querySelector("#timeRange"),
+      backgroundType: document.querySelector("#backgroundType"),
+      borderColor: document.querySelector("#borderColor"),
+      backgroundColor: document.querySelector("#backgroundColor"),
+      showStatus: document.querySelector("#showStatus"),
+      compact: document.querySelector("#compact"),
+    };
+    const timeRangeContainer = document.querySelector("#timeRangeContainer");
+
+    function cleanHex(value, fallback) {
+      const normalized = value.trim().replace("#", "");
+      return /^[0-9a-fA-F]{6}$/.test(normalized) ? normalized.toLowerCase() : fallback;
+    }
+
+    function updateMarkdown() {
+      const type = controls.widgetType.value;
+      const isTop = type === "top-track" || type === "top-artist";
+      
+      // Show/hide time range selector
+      timeRangeContainer.style.display = isTop ? "grid" : "none";
+
+      const params = new URLSearchParams();
+      params.set("background_type", controls.backgroundType.value);
+      params.set("border_color", cleanHex(controls.borderColor.value, "ffffff"));
+      params.set("background_color", cleanHex(controls.backgroundColor.value, "181414"));
+      if (controls.showStatus.checked) params.set("show_status", "true");
+      if (controls.compact.checked) params.set("compact", "true");
+      if (isTop) params.set("time_range", controls.timeRange.value);
+
+      const queryStr = params.toString();
+      const svgUrl = `${baseUrl}/api/${type}/${publicId}.svg?${queryStr}`;
+      
+      let redirectPath = type === "now-playing" ? "redirect" : `redirect-${type}`;
+      let redirectUrl = `${baseUrl}/${redirectPath}/${publicId}`;
+      if (isTop) redirectUrl += `?time_range=${controls.timeRange.value}`;
+
+      markdown.value = `[![Spotify Now Playing](${svgUrl})](${redirectUrl})`;
+      testLink.href = redirectUrl;
+      previewLink.href = redirectUrl;
+      
+      // Update preview with cache buster
+      preview.style.display = "block";
+      previewError.style.display = "none";
+      preview.src = `${svgUrl}&t=${Date.now()}`;
+    }
+
+    preview.onerror = () => {
+      preview.style.display = "none";
+      previewError.style.display = "block";
+    };
+
+    Object.values(controls).forEach((control) => {
+      control.addEventListener("input", updateMarkdown);
+      control.addEventListener("change", updateMarkdown);
+    });
+
+    button.addEventListener("click", async () => {
+      await navigator.clipboard.writeText(markdown.value);
+      const originalText = button.textContent;
+      button.textContent = "Copied!";
+      button.style.backgroundColor = "#ffffff";
+      button.style.color = "#000000";
+      setTimeout(() => {
+        button.textContent = originalText;
+        button.style.backgroundColor = "";
+        button.style.color = "";
+      }, 2000);
+    });
+    
+    updateMarkdown();
+  </script>
+</body>
+</html>
+

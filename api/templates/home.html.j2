@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SpotiBadge — Spotify Now Playing for GitHub</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg-base: #121212;
+      --bg-surface: #181818;
+      --bg-highlight: #1f1f1f;
+      --bg-card: #252525;
+      --text-base: #ffffff;
+      --text-muted: #b3b3b3;
+      --spotify-green: #1ed760;
+      --spotify-green-hover: #36e474;
+      --border-gray: #4d4d4d;
+      --negative-red: #f3727f;
+      --shadow-heavy: rgba(0,0,0,0.5) 0px 8px 24px;
+      --shadow-medium: rgba(0,0,0,0.3) 0px 8px 8px;
+    }
+
+    * { box-sizing: border-box; }
+    
+    body {
+      margin: 0;
+      font-family: "SpotifyMixUI", "CircularSp", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-base);
+      color: var(--text-base);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: inherit; text-decoration: none; transition: color 0.2s; }
+    a:hover { color: var(--text-base); }
+
+    /* Navigation */
+    nav {
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      position: sticky;
+      top: 0;
+      background-color: rgba(18, 18, 18, 0.8);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 1.25rem;
+      letter-spacing: -0.5px;
+    }
+
+    .brand svg { color: var(--spotify-green); }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      font-size: 0.875rem;
+      font-weight: 700;
+    }
+
+    .github-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background-color: var(--bg-highlight);
+      padding: 4px 12px 4px 4px;
+      border-radius: 9999px;
+      transition: background-color 0.2s;
+    }
+
+    .github-profile:hover { background-color: var(--bg-card); }
+    .github-profile img { width: 28px; height: 28px; border-radius: 50%; }
+
+    /* Hero Section */
+    .hero {
+      padding: 80px 32px 60px;
+      max-width: 1080px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: clamp(3rem, 7vw, 6rem);
+      font-weight: 700;
+      letter-spacing: -3px;
+      line-height: 1;
+      margin: 0 0 24px;
+    }
+
+    .hero p {
+      font-size: 1.5rem;
+      color: var(--text-muted);
+      max-width: 800px;
+      margin: 0 auto 48px;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 9999px;
+      font-size: 1rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      padding: 18px 48px;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.1s, background-color 0.2s;
+    }
+
+    .btn:active { transform: scale(0.95); }
+    .btn-primary { background-color: var(--spotify-green); color: #000000; }
+    .btn-primary:hover { background-color: var(--spotify-green-hover); }
+    .btn-outline { background-color: transparent; border: 1px solid var(--border-gray); color: var(--text-base); }
+    .btn-outline:hover { border-color: var(--text-base); }
+
+    /* Layout Sections */
+    .container {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 0 32px 100px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 40px;
+    }
+
+    .panel {
+      background-color: var(--bg-surface);
+      border-radius: 8px;
+      padding: 32px;
+      box-shadow: var(--shadow-medium);
+      transition: background-color 0.2s;
+    }
+
+    .panel:hover { background-color: var(--bg-highlight); }
+
+    h2 { font-size: 1.5rem; margin-top: 0; }
+    h3 { font-size: 1.125rem; color: var(--text-muted); margin-bottom: 20px; }
+
+    /* Form Styles */
+    .form-group { margin-bottom: 20px; }
+    label { display: block; font-size: 0.75rem; font-weight: 700; margin-bottom: 8px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    
+    input[type="text"], input[type="password"] {
+      width: 100%;
+      background-color: var(--bg-highlight);
+      border: 1px solid transparent;
+      border-radius: 4px;
+      padding: 12px;
+      color: var(--text-base);
+      font-size: 0.875rem;
+      transition: background-color 0.2s, border-color 0.2s;
+    }
+
+    input:focus {
+      outline: none;
+      background-color: var(--bg-card);
+      border-color: var(--border-gray);
+    }
+
+    /* Steps Documentation */
+    .steps { display: grid; gap: 24px; }
+    .step { display: flex; gap: 20px; }
+    .step-num {
+      flex-shrink: 0;
+      width: 32px;
+      height: 32px;
+      background-color: var(--bg-highlight);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.875rem;
+    }
+    .step-content p { margin: 0; color: var(--text-muted); font-size: 0.9375rem; }
+    .step-content strong { display: block; color: var(--text-base); margin-bottom: 4px; }
+
+    code {
+      background-color: #000;
+      color: var(--spotify-green);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.875rem;
+    }
+
+    .warning-box {
+      margin-top: 32px;
+      padding: 20px;
+      background-color: rgba(243, 114, 127, 0.1);
+      border-left: 4px solid var(--negative-red);
+      border-radius: 4px;
+      font-size: 0.875rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 896px) {
+      .grid-2 { grid-template-columns: 1fr; }
+      nav { padding: 0 16px; }
+      .nav-links span { display: none; }
+      .hero { padding: 60px 16px 40px; }
+      .container { padding: 0 16px 60px; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="/" class="brand">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 0C5.37258 0 0 5.37258 0 12C0 18.6274 5.37258 24 12 24C18.6274 24 24 18.6274 24 12C24 5.37258 18.6274 0 12 0ZM17.4859 17.3039C17.2798 17.6394 16.8398 17.7424 16.5043 17.5363C13.6823 15.8118 10.123 15.4199 5.922 16.3789C5.53986 16.466 5.16194 16.2259 5.07483 15.8438C4.98772 15.4616 5.22776 15.0837 5.60991 14.9966C10.2014 13.9472 14.129 14.3948 17.2533 16.3224C17.5888 16.5285 17.6918 16.9685 17.4859 17.3039ZM18.9566 14.0305C18.6874 14.4697 18.1133 14.6062 17.6741 14.337C14.4449 12.3503 9.53177 11.7725 5.71184 12.932C5.22501 13.0797 4.71171 12.8021 4.56401 12.3152C4.41631 11.8284 4.69391 11.3151 5.18074 11.1674C9.53488 9.84576 15.011 10.5103 18.6501 12.7479C19.0893 13.0171 19.2258 13.5912 18.9566 14.0305ZM19.084 10.6695C15.2217 8.3755 8.8354 8.16431 5.12788 9.29065C4.53603 9.47047 3.90384 9.14159 3.72402 8.54974C3.5442 7.95788 3.87308 7.32569 4.46494 7.14587C8.71887 5.85387 15.7721 6.10189 20.218 8.74246C20.7505 9.05872 20.9229 9.74391 20.6066 10.2764C20.2904 10.8088 19.6052 10.9813 19.084 10.6695Z"/>
+      </svg>
+      <span>SpotiBadge</span>
+    </a>
+    <div class="nav-links">
+      <a href="https://github.com/prantikmedhi" target="_blank" class="github-profile">
+        <img src="https://github.com/prantikmedhi.png" alt="prantikmedhi">
+        <span>prantikmedhi</span>
+      </a>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <h1>Music, live on your profile.</h1>
+    <p>SpotiBadge generates a dynamic Spotify "Now Playing" widget for your GitHub README. No database, no trackers, just your music.</p>
+    <a href="#setup" class="btn btn-primary">Get Started</a>
+  </header>
+
+  <div class="container">
+    <div class="grid-2">
+      <!-- Documentation -->
+      <section id="setup">
+        <h2>Documentation</h2>
+        <h3>How to get your badge</h3>
+        
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-content">
+              <strong>Create a Spotify App</strong>
+              <p>Go to the <a href="https://developer.spotify.com/dashboard" target="_blank" style="text-decoration: underline;">Spotify Developer Dashboard</a> and create a new App.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-content">
+              <strong>Configure Redirect URI</strong>
+              <p>In your App settings, add this Redirect URI: <code>{{ callback_url }}</code></p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-content">
+              <strong>Get Credentials</strong>
+              <p>Copy your <code>Client ID</code> and <code>Client Secret</code> and paste them into the form on the right.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">4</div>
+            <div class="step-content">
+              <strong>Connect & Customize</strong>
+              <p>Sign in with Spotify, customize your widget theme, and copy the Markdown code to your GitHub README.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="warning-box">
+          <strong>Why do I need my own App?</strong>
+          <p style="margin-top: 8px;">Spotify restricts "Development Mode" apps to specific users. By using your own App credentials, you become the developer, ensuring you never hit a "403 Forbidden" error.</p>
+        </div>
+
+        <div class="panel" style="margin-top: 40px;">
+          <h2>Privacy & Technical Details</h2>
+          <div class="steps">
+            <div class="step">
+              <div class="step-num">🔒</div>
+              <div class="step-content">
+                <strong>No Database Storage</strong>
+                <p>Your Spotify <code>Client ID</code> and <code>Client Secret</code> are <strong>never</strong> saved in a database. They are securely encrypted and signed directly into your unique widget URL.</p>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">⚡</div>
+              <div class="step-content">
+                <strong>Stateless & Fast</strong>
+                <p>Because the URL contains all necessary info (refresh token + credentials), the app is completely stateless. We only use an in-memory cache to speed up track fetching.</p>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num">📡</div>
+              <div class="step-content">
+                <strong>API Endpoints</strong>
+                <p style="margin-bottom: 8px;">Directly integrate with our core endpoints:</p>
+                <ul style="list-style: none; padding: 0; font-size: 0.875rem; color: var(--text-muted); display: grid; gap: 8px;">
+                  <li>• <code>/api/now-playing/{id}.svg</code>: Returns the dynamic SVG.</li>
+                  <li>• <code>/redirect/{id}</code>: Redirects to your current Spotify track.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Connection / Customization -->
+      <section>
+        <div class="panel">
+          <h2>Connect Spotify</h2>
+          <h3>Enter your App credentials</h3>
+          
+          <form action="/login" method="POST">
+            <div class="form-group">
+              <label for="client_id">Client ID</label>
+              <input type="text" name="client_id" id="client_id" placeholder="Paste your Spotify Client ID" required>
+            </div>
+            <div class="form-group">
+              <label for="client_secret">Client Secret</label>
+              <input type="password" name="client_secret" id="client_secret" placeholder="Paste your Spotify Client Secret" required>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 8px;">Connect Account</button>
+          </form>
+
+          {% if not spotify_ready %}
+          <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 20px; text-align: center;">
+            This deployment is running in "Self-Service Mode".
+          </p>
+          {% endif %}
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <footer style="margin-top: 80px; padding: 40px 32px; border-top: 1px solid rgba(255, 255, 255, 0.1); text-align: center;">
+    <p style="font-size: 0.875rem; color: var(--text-muted); margin: 0;">
+      Made for music lovers with ❤️ by <span style="color: var(--spotify-green); font-weight: 700;">SpotiBadge</span>
+    </p>
+    <div style="margin-top: 12px; display: flex; justify-content: center; gap: 24px; font-size: 0.75rem; font-weight: 700;">
+      <a href="https://github.com/prantikmedhi/spotibadge" target="_blank" style="color: var(--text-muted);">GITHUB</a>
+      <a href="/login" style="color: var(--text-muted);">CONNECT</a>
+    </div>
+  </footer>
+</body>
+</html>
