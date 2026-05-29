@@ -12,6 +12,7 @@ import os
 import random
 import secrets
 import time
+from datetime import date
 from dataclasses import replace
 from io import BytesIO
 from typing import Any, Optional, Tuple
@@ -20,7 +21,7 @@ import requests
 from base64 import b64encode
 
 from colorthief import ColorThief
-from flask import Flask, Response, render_template, request, redirect, session, url_for
+from flask import Flask, Response, render_template, request, redirect, send_from_directory, session, url_for
 
 from .config import (
     app_config,
@@ -601,6 +602,17 @@ def get_public_base_url() -> str:
     return request.url_root.rstrip("/")
 
 
+def get_seo_base_url() -> str:
+    """Return a public absolute URL for canonical links and crawl files."""
+    host_url = request.url_root.rstrip("/")
+    host = request.host.split(":", 1)[0].lower()
+    if host not in {"127.0.0.1", "localhost"}:
+        return host_url
+    if app_config.base_url and "127.0.0.1" not in app_config.base_url and "localhost" not in app_config.base_url:
+        return app_config.base_url.rstrip("/")
+    return "https://spotibadge.vercel.app"
+
+
 def build_markdown(public_id: str, params: str = "background_type=blur_dark&border_color=ffffff") -> str:
     """Build the README markdown for a connected user."""
     base_url = get_public_base_url()
@@ -849,14 +861,65 @@ def make_error_svg(message: str, status_code: int = 200, width: int = 0, height:
 @app.route("/")
 def home_page() -> Response:
     """Public landing page where users connect Spotify and copy markdown."""
+    canonical_url = get_seo_base_url()
     return Response(
         render_template(
             "home.html.j2",
             spotify_ready=spotify.is_configured(),
             callback_url=app_config.callback_url(),
+            canonical_url=canonical_url,
+            og_image_url=f"{canonical_url}/assets/hero.jpg",
         ),
         mimetype="text/html",
     )
+
+
+@app.route("/robots.txt")
+def robots_txt() -> Response:
+    """Expose crawler rules for the public site."""
+    base_url = get_seo_base_url()
+    body = f"""User-agent: *
+Allow: /
+Allow: /assets/
+Disallow: /api/
+Disallow: /callback
+Disallow: /health
+Disallow: /login
+Disallow: /redirect
+Disallow: /redirect-recently-played
+Disallow: /redirect-top-track
+Disallow: /redirect-top-artist
+
+Sitemap: {base_url}/sitemap.xml
+"""
+    return Response(body, mimetype="text/plain")
+
+
+@app.route("/sitemap.xml")
+def sitemap_xml() -> Response:
+    """Expose a minimal XML sitemap for indexable public pages."""
+    base_url = get_seo_base_url()
+    today = date.today().isoformat()
+    body = f"""<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>{base_url}/</loc>
+    <lastmod>{today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>
+"""
+    return Response(body, mimetype="application/xml")
+
+
+@app.route("/assets/<path:filename>")
+def assets(filename: str) -> Response:
+    """Serve public assets that are used by README and social previews."""
+    assets_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets")
+    response = send_from_directory(assets_dir, filename)
+    response.headers["Cache-Control"] = "public, max-age=86400"
+    return response
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -1056,23 +1119,6 @@ def _generate_widget_response(public_id: str, fetch_type: str, args: Any) -> Res
     resp.headers["Cache-Control"] = "s-maxage=1"
 
     return resp
-
-
-@app.route("/preview")
-def preview_page() -> Response:
-    """Serve the preview page for local development."""
-    candidates = [
-        os.path.join(os.getcwd(), "preview.html"),
-        os.path.join(
-            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-            "preview.html",
-        ),
-    ]
-    for path in candidates:
-        if os.path.isfile(path):
-            with open(path, "r", encoding="utf-8") as f:
-                return Response(f.read(), mimetype="text/html")
-    return Response("preview.html not found", status=404, mimetype="text/plain")
 
 
 @app.route("/redirect/<public_id>")
