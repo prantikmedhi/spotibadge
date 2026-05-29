@@ -9,13 +9,15 @@ Show your real-time now playing track, recently played songs, top tracks, or top
 No database, no trackers, just your music.
 
 ![SpotiBadge Preview](assets/hero.jpg)
+
+Use the hosted app at **[spotibadge.vercel.app](https://spotibadge.vercel.app)** to generate your badge without writing a single line of code.
 </div>
 
 ## About
 
-SpotiBadge is a Spotify now playing badge generator for GitHub README profiles. It uses Spotify OAuth, Flask, Jinja2 SVG templates, and Vercel-friendly stateless URLs to render live music widgets without storing user data.
+SpotiBadge is a no-code Spotify now playing badge generator for GitHub README profiles. It uses Spotify OAuth, Flask, Jinja2 SVG templates, and Vercel-friendly stateless URLs to render live music widgets without storing user data.
 
-**Keywords:** Spotify README widget, Spotify now playing badge, GitHub profile music badge, dynamic SVG badge, recently played Spotify widget, top tracks badge, top artists badge, Vercel Spotify widget.
+**Keywords:** Spotify README widget, Spotify now playing badge, GitHub profile music badge, no-code Spotify badge, dynamic SVG badge, recently played Spotify widget, top tracks badge, top artists badge, Vercel Spotify widget.
 
 ## ✨ Features
 
@@ -29,9 +31,17 @@ SpotiBadge is a Spotify now playing badge generator for GitHub README profiles. 
 
 ## 🚀 Quick Start
 
-Getting your own SpotiBadge is easy and requires no coding.
+Getting your own SpotiBadge takes a few clicks and requires no coding.
 
-👉 **[Read the Full Setup Guide (SETUP.md)](SETUP.md)**
+1. Visit **[spotibadge.vercel.app](https://spotibadge.vercel.app)**.
+2. Connect your Spotify account.
+3. Customize the widget style in the browser.
+4. Copy the generated Markdown.
+5. Paste it into your GitHub profile README.
+
+That is it. You do not need to clone this repo, deploy an app, edit code, or manually build an SVG.
+
+👉 **[Read the Full Setup Guide (SETUP.md)](SETUP.md)** if you want to self-host or use your own Spotify Developer credentials.
 
 The setup guide covers:
 1. How to generate your free Spotify Developer credentials.
@@ -53,7 +63,7 @@ You can customize your badge directly via URL parameters.
 
 **Example Markdown:**
 ```markdown
-[![Spotify Now Playing](https://your-app.vercel.app/api/now-playing/your_id.svg?background_type=blur_dark&show_status=true)](https://your-app.vercel.app/redirect/your_id)
+[![Spotify Now Playing](https://spotibadge.vercel.app/api/now-playing/your_id.svg?background_type=blur_dark&show_status=true)](https://spotibadge.vercel.app/redirect/your_id)
 ```
 
 ## 📡 API Endpoints
