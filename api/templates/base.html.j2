@@ -138,22 +138,6 @@
                     background: rgba(255, 255, 255, var(--blur-overlay-opacity));
                 }
 
-                /* Text shadow for blur backgrounds (keeps default gradient colors) */
-                .container.blur-bg.blur-dark .song-text,
-                .container.blur-bg.blur-dark .artist-text,
-                .container.blur-bg.blur-dark .status {
-                    filter: drop-shadow(0 0 1px rgba(0,0,0,0.9))
-                            drop-shadow(0 0 3px rgba(0,0,0,0.6));
-                }
-
-                .container.blur-bg.blur-light .song-text,
-                .container.blur-bg.blur-light .artist-text,
-                .container.blur-bg.blur-light .status {
-                    filter: brightness(0.55)
-                            drop-shadow(0 0 1px rgba(255,255,255,0.9))
-                            drop-shadow(0 0 3px rgba(255,255,255,0.5));
-                }
-
                 .main {
                     position: relative;
                     z-index: 1;
@@ -218,8 +202,6 @@
                     animation: gradient 15s ease infinite;
                     {% endif %}
                     transition: opacity 0.2s ease;
-                    filter: drop-shadow(0 0 1px rgba(0,0,0,0.8))
-                            drop-shadow(0 0 2px rgba(0,0,0,0.5));
                 }
 
                 .artist-text {
@@ -238,8 +220,6 @@
                     animation: gradient 12s ease infinite;
                     {% endif %}
                     transition: opacity 0.2s ease;
-                    filter: drop-shadow(0 0 1px rgba(0,0,0,0.8))
-                            drop-shadow(0 0 2px rgba(0,0,0,0.5));
                 }
 
                 .song:hover .song-text,
@@ -322,9 +302,6 @@
                     background-clip: text;
                     animation: gradient 17s ease infinite;
                     {% endif %}
-                    /* Contrasting outline for legibility */
-                    filter: drop-shadow(0 0 1px rgba(0,0,0,0.8))
-                            drop-shadow(0 0 2px rgba(0,0,0,0.5));
                 }
 
                 a {
