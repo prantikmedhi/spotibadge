@@ -25,6 +25,7 @@ from .config import (
     app_config,
     ColorPalette,
     compact_svg_config,
+    large_svg_config,
     svg_config,
     template_config,
     validate_background_type,
@@ -42,6 +43,12 @@ from .storage import ConnectedUser, generate_public_id, get_user, save_user, upd
 
 app = Flask(__name__)
 app.secret_key = app_config.secret_key
+
+WIDGET_SIZE_CONFIGS = {
+    "small": compact_svg_config,
+    "medium": svg_config,
+    "large": large_svg_config,
+}
 
 
 # ============================================================================
@@ -380,6 +387,7 @@ def make_svg(
     song_color: Optional[str] = None,
     artist_color: Optional[str] = None,
     status_color: Optional[str] = None,
+    widget_size: str = "medium",
 ) -> str:
     """
     Generate SVG widget from normalized track data.
@@ -400,8 +408,11 @@ def make_svg(
     Returns:
         Rendered SVG template string
     """
-    # Select configuration based on mode
-    cfg = compact_svg_config if is_compact else svg_config
+    # Select configuration based on mode. Keep compact as a backwards-compatible
+    # alias for the new small size parameter.
+    cfg = WIDGET_SIZE_CONFIGS.get(widget_size, svg_config)
+    if is_compact:
+        cfg = compact_svg_config
     
     actual_width = width if width and width > 0 else cfg.width
     actual_height = height if height and height > 0 else cfg.height
@@ -592,9 +603,12 @@ def make_list_svg(
     song_color: Optional[str] = None,
     artist_color: Optional[str] = None,
     status_color: Optional[str] = None,
+    widget_size: str = "medium",
 ) -> str:
     """Generate SVG widget for a list of tracks/artists."""
-    cfg = compact_svg_config if is_compact else svg_config
+    cfg = WIDGET_SIZE_CONFIGS.get(widget_size, svg_config)
+    if is_compact:
+        cfg = compact_svg_config
     
     actual_width = width if width and width > 0 else cfg.width
     
@@ -618,9 +632,30 @@ def make_list_svg(
     blur_is_dark = background_type == "blur_dark"
     
     # Calculate a dynamic height based on the number of items
-    item_height = 50 if is_compact else 60
-    header_height = 40
-    padding = 20
+    if cfg is compact_svg_config:
+        item_height = 50
+        header_height = 40
+        padding = 20
+        list_padding = 16
+        title_font_size = 14
+        track_font_size = 14
+        artist_font_size = 12
+    elif cfg is large_svg_config:
+        item_height = 72
+        header_height = 52
+        padding = 26
+        list_padding = 20
+        title_font_size = 18
+        track_font_size = 17
+        artist_font_size = 14
+    else:
+        item_height = 60
+        header_height = 40
+        padding = 20
+        list_padding = 16
+        title_font_size = 14
+        track_font_size = 14
+        artist_font_size = 12
     dynamic_height = header_height + (len(items) * item_height) + padding
     
     actual_height = height if height and height > 0 else dynamic_height
@@ -640,6 +675,10 @@ def make_list_svg(
         "width": actual_width,
         "height": actual_height,
         "item_height": item_height,
+        "list_padding": list_padding,
+        "title_font_size": title_font_size,
+        "track_font_size": track_font_size,
+        "artist_font_size": artist_font_size,
         "border_radius": cfg.border_radius,
         # Custom colors
         "custom_song_color": song_color,
@@ -944,6 +983,8 @@ def _generate_widget_response(public_id: str, fetch_type: str, args: Any) -> Res
     # Optional parameters
     show_status = args.get("show_status", "").lower() in ("true", "1", "yes")
     is_compact = args.get("compact", "").lower() in ("true", "1", "yes")
+    raw_size = args.get("size", "medium").lower()
+    widget_size = raw_size if raw_size in WIDGET_SIZE_CONFIGS else "medium"
     time_range = args.get("time_range", "short_term")
 
     _user, track_data, error = load_connected_track(public_id, fetch_type, time_range)
@@ -964,6 +1005,7 @@ def _generate_widget_response(public_id: str, fetch_type: str, args: Any) -> Res
             song_color=song_color,
             artist_color=artist_color,
             status_color=status_color,
+            widget_size=widget_size,
         )
     else:
         # Override status text for specific widgets if show_status is requested
@@ -988,6 +1030,7 @@ def _generate_widget_response(public_id: str, fetch_type: str, args: Any) -> Res
             song_color=song_color,
             artist_color=artist_color,
             status_color=status_color,
+            widget_size=widget_size,
         )
 
     resp = Response(svg, mimetype="image/svg+xml")

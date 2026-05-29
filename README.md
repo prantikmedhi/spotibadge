@@ -42,7 +42,8 @@ You can customize your badge directly via URL parameters.
 | `border_color` | hex | `ffffff` | Hex color code without the `#` |
 | `background_color`| hex | `181414` | Hex color code without the `#` (Only works if type is `color`) |
 | `show_status` | boolean | `false` | Set to `true` to show "Vibing to:" or "Recently played:" |
-| `compact` | boolean | `false` | Set to `true` for a smaller, space-saving widget layout |
+| `size` | string | `medium` | Options: `small`, `medium`, `large` |
+| `compact` | boolean | `false` | Backward-compatible alias for `size=small` |
 
 **Example Markdown:**
 ```markdown

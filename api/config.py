@@ -290,6 +290,80 @@ class CompactSVGConfig:
 
 
 @dataclass(frozen=True)
+class LargeSVGConfig:
+    """Configuration for large widget mode."""
+
+    # Dimensions
+    width: int = 650
+    height: int = 165
+    album_art_size: int = 150
+    border_radius: int = 6
+
+    # Widget container layout
+    widget_padding_top: int = 8
+    widget_padding_right: int = 10
+    widget_padding_bottom: int = 8
+    widget_padding_left: int = 8
+    widget_border_width: int = 1
+    art_content_gap: int = 10
+
+    # Equalizer bar area
+    eq_spacer_height: int = 54
+    eq_spacer_margin_top: int = 18
+
+    # Spacing between song and artist
+    artist_margin_top: int = 5
+
+    # Equalizer bars
+    eq_bar_count: int = 96
+    eq_bar_max_height: int = 54
+    eq_bar_gap: int = 1
+
+    # Content column height (centering)
+    content_column_height: int = 116
+
+    # Font sizes
+    song_font_size: int = 27
+    artist_font_size: int = 20
+
+    # Default colors (same as standard)
+    default_background: str = "181414"
+    default_border: str = "181414"
+    default_background_type: str = "color"
+
+    # Blur settings
+    blur_amount: int = 24
+    blur_dark_opacity: float = 0.7
+    blur_light_opacity: float = 0.5
+
+    # Audio features
+    default_tempo: float = 120.0
+    default_energy: float = 0.6
+
+    # Palettes (same defaults)
+    default_bar_palette: ColorPalette = field(
+        default_factory=lambda: [
+            (75, 75, 75),
+            (100, 100, 100),
+            (125, 125, 125),
+            (150, 150, 150),
+        ]
+    )
+    default_song_palette: ColorPalette = field(
+        default_factory=lambda: [
+            (200, 200, 200),
+            (150, 150, 150),
+        ]
+    )
+
+    # Placeholder image (same as standard)
+    placeholder_image: str = SVGConfig().placeholder_image
+
+    # Placeholder URL for random color palettes
+    placeholder_url: str = "https://picsum.photos/300/300"
+
+
+@dataclass(frozen=True)
 class TemplateConfig:
     """Template configuration."""
 
@@ -363,4 +437,5 @@ spotify_config = SpotifyConfig()
 app_config = AppConfig()
 svg_config = SVGConfig()
 compact_svg_config = CompactSVGConfig()
+large_svg_config = LargeSVGConfig()
 template_config = TemplateConfig()

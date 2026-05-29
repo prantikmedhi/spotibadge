@@ -114,6 +114,38 @@
       font-size: 0.875rem;
     }
 
+    .segmented-control {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 4px;
+      padding: 4px;
+      background-color: var(--bg-highlight);
+      border-radius: 6px;
+    }
+    .segmented-control input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .segmented-control span {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 34px;
+      border-radius: 4px;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.8125rem;
+      font-weight: 700;
+      text-transform: none;
+      letter-spacing: 0;
+      transition: background-color 0.2s, color 0.2s;
+    }
+    .segmented-control input:checked + span {
+      background-color: var(--spotify-green);
+      color: #000000;
+    }
+
     .checkbox-group { display: flex; align-items: center; gap: 10px; cursor: pointer; }
     .checkbox-group input { width: 18px; height: 18px; accent-color: var(--spotify-green); }
 
@@ -238,6 +270,23 @@
               </select>
             </div>
             <div class="control-item">
+              <label>Widget Size</label>
+              <div class="segmented-control" role="radiogroup" aria-label="Widget Size">
+                <label>
+                  <input type="radio" name="widgetSize" value="small">
+                  <span>Small</span>
+                </label>
+                <label>
+                  <input type="radio" name="widgetSize" value="medium" checked>
+                  <span>Medium</span>
+                </label>
+                <label>
+                  <input type="radio" name="widgetSize" value="large">
+                  <span>Large</span>
+                </label>
+              </div>
+            </div>
+            <div class="control-item">
               <label for="backgroundType">Background Type</label>
               <select id="backgroundType">
                 <option value="blur_dark" selected>Blur Dark</option>
@@ -282,10 +331,6 @@
             <label class="checkbox-group" for="showStatus">
               <input id="showStatus" type="checkbox">
               <span>Show Status Header</span>
-            </label>
-            <label class="checkbox-group" for="compact">
-              <input id="compact" type="checkbox">
-              <span>Compact Mode</span>
             </label>
           </div>
         </div>
@@ -353,9 +398,14 @@
       artistColor: document.querySelector("#artistColor"),
       statusColor: document.querySelector("#statusColor"),
       showStatus: document.querySelector("#showStatus"),
-      compact: document.querySelector("#compact"),
     };
     const timeRangeContainer = document.querySelector("#timeRangeContainer");
+    const widgetSizeControls = document.querySelectorAll('input[name="widgetSize"]');
+    const sizePresets = {
+      small: { width: "400", height: "80" },
+      medium: { width: "540", height: "135" },
+      large: { width: "650", height: "165" },
+    };
 
     function cleanHex(value, fallback) {
       const normalized = value.trim().replace("#", "");
@@ -366,19 +416,13 @@
     function updateMarkdown() {
       const type = controls.widgetType.value;
       const isTop = type === "top-track" || type === "top-artist";
-      const isCompact = controls.compact.checked;
-      
-      // Update default width/height based on compact mode if not manually changed
-      // (Simple heuristic: if it's the default value, update it)
-      if (isCompact && controls.width.value === "540") controls.width.value = "400";
-      if (!isCompact && controls.width.value === "400") controls.width.value = "540";
-      if (isCompact && controls.height.value === "135") controls.height.value = "80";
-      if (!isCompact && controls.height.value === "80") controls.height.value = "135";
+      const widgetSize = document.querySelector('input[name="widgetSize"]:checked').value;
       
       // Show/hide time range selector
       timeRangeContainer.style.display = isTop ? "grid" : "none";
 
       const params = new URLSearchParams();
+      params.set("size", widgetSize);
       params.set("background_type", controls.backgroundType.value);
       params.set("border_color", cleanHex(controls.borderColor.value, "ffffff"));
       params.set("background_color", cleanHex(controls.backgroundColor.value, "181414"));
@@ -396,7 +440,6 @@
       if (stc) params.set("status_color", stc);
 
       if (controls.showStatus.checked) params.set("show_status", "true");
-      if (isCompact) params.set("compact", "true");
       if (isTop) params.set("time_range", controls.timeRange.value);
 
       const queryStr = params.toString();
@@ -425,6 +468,15 @@
       control.addEventListener("input", updateMarkdown);
       control.addEventListener("change", updateMarkdown);
     });
+    widgetSizeControls.forEach((control) => {
+      control.addEventListener("change", () => {
+        if (!control.checked) return;
+        const preset = sizePresets[control.value];
+        controls.width.value = preset.width;
+        controls.height.value = preset.height;
+        updateMarkdown();
+      });
+    });
 
     button.addEventListener("click", async () => {
       await navigator.clipboard.writeText(markdown.value);
@@ -443,4 +495,3 @@
   </script>
 </body>
 </html>
-
