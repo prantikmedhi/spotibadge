@@ -4,12 +4,19 @@
 
 **Music, live on your profile.**
 
-SpotiBadge generates a dynamic, real-time Spotify "Now Playing" widget for your GitHub README. 
+SpotiBadge generates dynamic Spotify README badges for GitHub profiles, portfolios, and project pages.
+Show your real-time now playing track, recently played songs, top tracks, or top artists as a customizable SVG widget.
 No database, no trackers, just your music.
 
 > *Placeholder: `![SpotiBadge Preview](docs/images/hero-preview.png)`*
 
 </div>
+
+## About
+
+SpotiBadge is a Spotify now playing badge generator for GitHub README profiles. It uses Spotify OAuth, Flask, Jinja2 SVG templates, and Vercel-friendly stateless URLs to render live music widgets without storing user data.
+
+**Keywords:** Spotify README widget, Spotify now playing badge, GitHub profile music badge, dynamic SVG badge, recently played Spotify widget, top tracks badge, top artists badge, Vercel Spotify widget.
 
 ## ✨ Features
 
