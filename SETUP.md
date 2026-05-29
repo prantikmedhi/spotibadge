@@ -16,7 +16,7 @@ To use SpotiBadge, you need a Spotify Developer App to generate a `Client ID` an
 ### Step 1: Go to the Dashboard
 Log in to the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard).
 
-> *Placeholder: `![Spotify Dashboard Login](docs/images/spotify-dashboard.png)`*
+![Spotify Dashboard Login](assets/dashboard.jpeg)
 
 ### Step 2: Create an App
 Click on the **"Create App"** button in the top right corner.
@@ -26,12 +26,12 @@ Click on the **"Create App"** button in the top right corner.
   - If using a hosted instance: Paste the URL provided on the homepage (e.g., `https://your-app.vercel.app/callback`)
   - If testing locally: `http://127.0.0.1:5000/callback`
 
-> *Placeholder: `![Create App Form](docs/images/create-app-form.png)`*
+![Create App Form](assets/redirect-url.jpeg)
 
 ### Step 3: Copy Your Credentials
 Once created, click on **"Settings"**. Here you will find your `Client ID`. Click **"View client secret"** to reveal your `Client Secret`.
 
-> *Placeholder: `![Client ID and Secret](docs/images/credentials.png)`*
+![Client ID and Secret](assets/client-id-secret.jpeg)
 
 **You can now paste these two values into the SpotiBadge homepage to connect your account!**
 
