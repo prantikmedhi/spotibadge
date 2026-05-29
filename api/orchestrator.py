@@ -377,6 +377,9 @@ def make_svg(
     is_compact: bool = False,
     width: Optional[int] = None,
     height: Optional[int] = None,
+    song_color: Optional[str] = None,
+    artist_color: Optional[str] = None,
+    status_color: Optional[str] = None,
 ) -> str:
     """
     Generate SVG widget from normalized track data.
@@ -390,6 +393,9 @@ def make_svg(
         is_compact: Whether to use compact mode layout
         width: Optional custom width
         height: Optional custom height
+        song_color: Optional custom song text color
+        artist_color: Optional custom artist text color
+        status_color: Optional custom status text color
     
     Returns:
         Rendered SVG template string
@@ -544,6 +550,10 @@ def make_svg(
         # Marquee
         "song_marquee": song_marquee,
         "artist_marquee": artist_marquee,
+        # Custom colors
+        "custom_song_color": song_color,
+        "custom_artist_color": artist_color,
+        "custom_status_color": status_color,
     }
 
     return render_template(get_template_name(), **template_data)
@@ -579,6 +589,9 @@ def make_list_svg(
     is_compact: bool = False,
     width: Optional[int] = None,
     height: Optional[int] = None,
+    song_color: Optional[str] = None,
+    artist_color: Optional[str] = None,
+    status_color: Optional[str] = None,
 ) -> str:
     """Generate SVG widget for a list of tracks/artists."""
     cfg = compact_svg_config if is_compact else svg_config
@@ -628,6 +641,10 @@ def make_list_svg(
         "height": actual_height,
         "item_height": item_height,
         "border_radius": cfg.border_radius,
+        # Custom colors
+        "custom_song_color": song_color,
+        "custom_artist_color": artist_color,
+        "custom_status_color": status_color,
     }
 
     return render_template("list.html.j2", **template_data)
@@ -908,12 +925,21 @@ def _generate_widget_response(public_id: str, fetch_type: str, args: Any) -> Res
     raw_bg_type = args.get("background_type", "")
     raw_width = args.get("width", "")
     raw_height = args.get("height", "")
+    
+    # Custom text colors
+    raw_song_color = args.get("song_color", "")
+    raw_artist_color = args.get("artist_color", "")
+    raw_status_color = args.get("status_color", "")
 
     background_color = validate_hex_color(raw_background, svg_config.default_background)
     border_color = validate_hex_color(raw_border, svg_config.default_border)
     background_type = validate_background_type(raw_bg_type, svg_config.default_background_type)
     width = validate_int(raw_width, 0, min_val=100, max_val=2000)
     height = validate_int(raw_height, 0, min_val=50, max_val=2000)
+    
+    song_color = validate_hex_color(raw_song_color, "")
+    artist_color = validate_hex_color(raw_artist_color, "")
+    status_color = validate_hex_color(raw_status_color, "")
 
     # Optional parameters
     show_status = args.get("show_status", "").lower() in ("true", "1", "yes")
@@ -934,7 +960,10 @@ def _generate_widget_response(public_id: str, fetch_type: str, args: Any) -> Res
             background_type, 
             is_compact,
             width=width,
-            height=height
+            height=height,
+            song_color=song_color,
+            artist_color=artist_color,
+            status_color=status_color,
         )
     else:
         # Override status text for specific widgets if show_status is requested
@@ -955,7 +984,10 @@ def _generate_widget_response(public_id: str, fetch_type: str, args: Any) -> Res
             show_status, 
             is_compact,
             width=width,
-            height=height
+            height=height,
+            song_color=song_color,
+            artist_color=artist_color,
+            status_color=status_color,
         )
 
     resp = Response(svg, mimetype="image/svg+xml")

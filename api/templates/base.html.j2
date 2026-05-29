@@ -58,6 +58,17 @@
                     --beat-duration: {{ beat_duration_ms }}ms;
                     --glow-intensity: {{ energy * 0.6 }};
                     --bar-glow: rgba({{ bar_palette[1][0] }}, {{ bar_palette[1][1] }}, {{ bar_palette[1][2] }}, var(--glow-intensity));
+
+                    /* Custom Text Colors */
+                    {% if custom_song_color %}
+                    --custom-song-color: #{{ custom_song_color }};
+                    {% endif %}
+                    {% if custom_artist_color %}
+                    --custom-artist-color: #{{ custom_artist_color }};
+                    {% endif %}
+                    {% if custom_status_color %}
+                    --custom-status-color: #{{ custom_status_color }};
+                    {% endif %}
                 }
 
                 * {
@@ -195,6 +206,9 @@
                     white-space: nowrap;
                     font-size: {{ song_font_size }}px;
                     font-weight: 500;
+                    {% if custom_song_color %}
+                    color: var(--custom-song-color);
+                    {% else %}
                     background: linear-gradient(125deg, var(--song-color-1), var(--song-color-2));
                     background-size: 200% 100%;
                     background-position: 0% 50%;
@@ -202,6 +216,7 @@
                     -webkit-background-clip: text;
                     background-clip: text;
                     animation: gradient 15s ease infinite;
+                    {% endif %}
                     transition: opacity 0.2s ease;
                     filter: drop-shadow(0 0 1px rgba(0,0,0,0.8))
                             drop-shadow(0 0 2px rgba(0,0,0,0.5));
@@ -211,6 +226,9 @@
                     display: inline-block;
                     white-space: nowrap;
                     font-size: {{ artist_font_size }}px;
+                    {% if custom_artist_color %}
+                    color: var(--custom-artist-color);
+                    {% else %}
                     background: linear-gradient(-125deg, var(--song-color-1), var(--song-color-2));
                     background-size: 200% 100%;
                     background-position: 0% 50%;
@@ -218,6 +236,7 @@
                     -webkit-background-clip: text;
                     background-clip: text;
                     animation: gradient 12s ease infinite;
+                    {% endif %}
                     transition: opacity 0.2s ease;
                     filter: drop-shadow(0 0 1px rgba(0,0,0,0.8))
                             drop-shadow(0 0 2px rgba(0,0,0,0.5));
@@ -293,12 +312,16 @@
                     text-align: center;
                     margin-bottom: 4px;
                     opacity: 0.7;
+                    {% if custom_status_color %}
+                    color: var(--custom-status-color);
+                    {% else %}
                     background: linear-gradient(-125deg, var(--song-color-1), var(--song-color-2));
                     background-size: 200% 100%;
                     -webkit-text-fill-color: transparent;
                     -webkit-background-clip: text;
                     background-clip: text;
                     animation: gradient 17s ease infinite;
+                    {% endif %}
                     /* Contrasting outline for legibility */
                     filter: drop-shadow(0 0 1px rgba(0,0,0,0.8))
                             drop-shadow(0 0 2px rgba(0,0,0,0.5));

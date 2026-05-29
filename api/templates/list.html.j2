@@ -95,10 +95,14 @@
                     font-size: 14px;
                     font-weight: 700;
                     margin-bottom: 12px;
+                    {% if custom_status_color %}
+                    color: #{{ custom_status_color }};
+                    {% else %}
                     background: linear-gradient(125deg, var(--song-color-1), var(--song-color-2));
                     -webkit-text-fill-color: transparent;
                     -webkit-background-clip: text;
                     background-clip: text;
+                    {% endif %}
                     opacity: 0.9;
                 }
 
@@ -143,7 +147,11 @@
                     white-space: nowrap;
                     overflow: hidden;
                     text-overflow: ellipsis;
+                    {% if custom_song_color %}
+                    color: #{{ custom_song_color }};
+                    {% else %}
                     color: #fff;
+                    {% endif %}
                     margin-bottom: 2px;
                 }
 
@@ -153,7 +161,11 @@
                     white-space: nowrap;
                     overflow: hidden;
                     text-overflow: ellipsis;
+                    {% if custom_artist_color %}
+                    color: #{{ custom_artist_color }};
+                    {% else %}
                     color: #b3b3b3;
+                    {% endif %}
                 }
                 
                 .container.blur-bg.blur-light .track-name { color: #121212; }

@@ -263,6 +263,21 @@
             </div>
           </div>
 
+          <div class="controls-grid" style="margin-top: 16px;">
+            <div class="control-item">
+              <label for="songColor">Song Color (Hex)</label>
+              <input id="songColor" type="text" placeholder="e.g. ffffff" maxlength="6">
+            </div>
+            <div class="control-item">
+              <label for="artistColor">Artist Color (Hex)</label>
+              <input id="artistColor" type="text" placeholder="e.g. b3b3b3" maxlength="6">
+            </div>
+            <div class="control-item">
+              <label for="statusColor">Header Color (Hex)</label>
+              <input id="statusColor" type="text" placeholder="e.g. 1ed760" maxlength="6">
+            </div>
+          </div>
+
           <div style="display: grid; gap: 16px; margin-top: 24px;">
             <label class="checkbox-group" for="showStatus">
               <input id="showStatus" type="checkbox">
@@ -334,6 +349,9 @@
       backgroundColor: document.querySelector("#backgroundColor"),
       width: document.querySelector("#width"),
       height: document.querySelector("#height"),
+      songColor: document.querySelector("#songColor"),
+      artistColor: document.querySelector("#artistColor"),
+      statusColor: document.querySelector("#statusColor"),
       showStatus: document.querySelector("#showStatus"),
       compact: document.querySelector("#compact"),
     };
@@ -341,6 +359,7 @@
 
     function cleanHex(value, fallback) {
       const normalized = value.trim().replace("#", "");
+      if (normalized === "") return ""; // Allow empty for "auto"
       return /^[0-9a-fA-F]{6}$/.test(normalized) ? normalized.toLowerCase() : fallback;
     }
 
@@ -368,6 +387,13 @@
       const h = parseInt(controls.height.value);
       if (!isNaN(w) && w > 0) params.set("width", w);
       if (!isNaN(h) && h > 0) params.set("height", h);
+      
+      const sc = cleanHex(controls.songColor.value, "");
+      const ac = cleanHex(controls.artistColor.value, "");
+      const stc = cleanHex(controls.statusColor.value, "");
+      if (sc) params.set("song_color", sc);
+      if (ac) params.set("artist_color", ac);
+      if (stc) params.set("status_color", stc);
 
       if (controls.showStatus.checked) params.set("show_status", "true");
       if (isCompact) params.set("compact", "true");
