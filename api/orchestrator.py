@@ -29,6 +29,7 @@ from .config import (
     template_config,
     validate_background_type,
     validate_hex_color,
+    validate_int,
 )
 from .exceptions import (
     AuthenticationError,
@@ -374,6 +375,8 @@ def make_svg(
     background_type: str = "color",
     show_status: bool = False,
     is_compact: bool = False,
+    width: Optional[int] = None,
+    height: Optional[int] = None,
 ) -> str:
     """
     Generate SVG widget from normalized track data.
@@ -385,6 +388,8 @@ def make_svg(
         background_type: Type of background ("color", "blur_dark", "blur_light")
         show_status: Whether to show "Vibing to:" / "Recently played:" text
         is_compact: Whether to use compact mode layout
+        width: Optional custom width
+        height: Optional custom height
     
     Returns:
         Rendered SVG template string
@@ -392,6 +397,9 @@ def make_svg(
     # Select configuration based on mode
     cfg = compact_svg_config if is_compact else svg_config
     
+    actual_width = width if width and width > 0 else cfg.width
+    actual_height = height if height and height > 0 else cfg.height
+
     bar_count = cfg.eq_bar_count
 
     # Get audio features for BPM-synced animation
@@ -424,7 +432,7 @@ def make_svg(
         + cfg.art_content_gap
     )
     bar_x_end = (
-        cfg.width
+        actual_width
         - cfg.widget_padding_right
         - cfg.widget_border_width
     )
@@ -433,7 +441,7 @@ def make_svg(
     # y: the .content column (text + bars) is vertically centred in .main
     # independently of the album art.  Estimate its bottom edge.
     inner_h = (
-        cfg.height
+        actual_height
         - (cfg.widget_padding_top + cfg.widget_border_width)
         - (cfg.widget_padding_bottom + cfg.widget_border_width)
     )
@@ -517,8 +525,8 @@ def make_svg(
         "status": status,
         "show_status": show_status,
         # Dimensions & layout (single source of truth from config)
-        "width": cfg.width,
-        "height": cfg.height,
+        "width": actual_width,
+        "height": actual_height,
         "album_size": cfg.album_art_size,
         "border_radius": cfg.border_radius,
         "widget_padding_top": cfg.widget_padding_top,
@@ -569,9 +577,13 @@ def make_list_svg(
     border_color: str,
     background_type: str = "color",
     is_compact: bool = False,
+    width: Optional[int] = None,
+    height: Optional[int] = None,
 ) -> str:
     """Generate SVG widget for a list of tracks/artists."""
     cfg = compact_svg_config if is_compact else svg_config
+    
+    actual_width = width if width and width > 0 else cfg.width
     
     # We will use the first item's art for the blur background
     album_art_url = track_data.get("album_art_url", "")
@@ -597,6 +609,8 @@ def make_list_svg(
     header_height = 40
     padding = 20
     dynamic_height = header_height + (len(items) * item_height) + padding
+    
+    actual_height = height if height and height > 0 else dynamic_height
 
     template_data = {
         "items": items,
@@ -610,8 +624,8 @@ def make_list_svg(
         "blur_is_dark": blur_is_dark,
         "blur_amount": cfg.blur_amount,
         "blur_overlay_opacity": cfg.blur_dark_opacity if blur_is_dark else cfg.blur_light_opacity,
-        "width": cfg.width,
-        "height": dynamic_height,
+        "width": actual_width,
+        "height": actual_height,
         "item_height": item_height,
         "border_radius": cfg.border_radius,
     }
@@ -709,13 +723,15 @@ def handle_generic_error(error: Exception) -> Response:
 
 import textwrap
 
-def make_error_svg(message: str, status_code: int = 200) -> Response:
+def make_error_svg(message: str, status_code: int = 200, width: int = 0, height: int = 0) -> Response:
     """
     Generate an error SVG response.
     
     Args:
         message: Error message to display
         status_code: HTTP status code (defaults to 200 so it renders in <img>)
+        width: Optional custom width
+        height: Optional custom height
         
     Returns:
         Flask Response with error SVG
@@ -727,7 +743,10 @@ def make_error_svg(message: str, status_code: int = 200) -> Response:
     tspans = []
     # Center vertically: offset starts from the top line
     line_height = 18
-    start_y = 50 - ((len(lines) - 1) * (line_height / 2) / svg_config.height * 100)
+    actual_width = width if width > 0 else svg_config.width
+    actual_height = height if height > 0 else svg_config.height
+    
+    start_y = 50 - ((len(lines) - 1) * (line_height / 2) / actual_height * 100)
     
     for i, line in enumerate(lines):
         dy = f"{i * line_height}px" if i > 0 else "0"
@@ -735,7 +754,7 @@ def make_error_svg(message: str, status_code: int = 200) -> Response:
         
     tspans_str = "\n            ".join(tspans)
 
-    error_svg = f"""<svg width="{svg_config.width}" height="{svg_config.height}" xmlns="http://www.w3.org/2000/svg">
+    error_svg = f"""<svg width="{actual_width}" height="{actual_height}" xmlns="http://www.w3.org/2000/svg">
         <rect width="100%" height="100%" fill="#1a1a1a" rx="5"/>
         <text x="50%" y="{start_y}%" fill="#ff6b6b" font-family="sans-serif" font-size="14" text-anchor="middle" dominant-baseline="middle">
             {tspans_str}
@@ -883,14 +902,18 @@ def top_artist_svg(public_id: str) -> Response:
 
 def _generate_widget_response(public_id: str, fetch_type: str, args: Any) -> Response:
     """Helper to parse args and generate the SVG response."""
-    # Validate and sanitize color parameters
+    # Validate and sanitize parameters
     raw_background = args.get("background_color", "")
     raw_border = args.get("border_color", "")
     raw_bg_type = args.get("background_type", "")
+    raw_width = args.get("width", "")
+    raw_height = args.get("height", "")
 
     background_color = validate_hex_color(raw_background, svg_config.default_background)
     border_color = validate_hex_color(raw_border, svg_config.default_border)
     background_type = validate_background_type(raw_bg_type, svg_config.default_background_type)
+    width = validate_int(raw_width, 0, min_val=100, max_val=2000)
+    height = validate_int(raw_height, 0, min_val=50, max_val=2000)
 
     # Optional parameters
     show_status = args.get("show_status", "").lower() in ("true", "1", "yes")
@@ -899,12 +922,20 @@ def _generate_widget_response(public_id: str, fetch_type: str, args: Any) -> Res
 
     _user, track_data, error = load_connected_track(public_id, fetch_type, time_range)
     if error:
-        return make_error_svg(error.message, 200)
+        return make_error_svg(error.message, 200, width=width, height=height)
     if track_data is None:
-        return make_error_svg("No Spotify track available.", 200)
+        return make_error_svg("No Spotify track available.", 200, width=width, height=height)
 
     if track_data.get("type") == "list":
-        svg = make_list_svg(track_data, background_color, border_color, background_type, is_compact)
+        svg = make_list_svg(
+            track_data, 
+            background_color, 
+            border_color, 
+            background_type, 
+            is_compact,
+            width=width,
+            height=height
+        )
     else:
         # Override status text for specific widgets if show_status is requested
         if fetch_type == "recently_played":
@@ -916,7 +947,16 @@ def _generate_widget_response(public_id: str, fetch_type: str, args: Any) -> Res
             track_data["is_playing"] = False
             track_data["status_text"] = "Top Artist:"
         
-        svg = make_svg(track_data, background_color, border_color, background_type, show_status, is_compact)
+        svg = make_svg(
+            track_data, 
+            background_color, 
+            border_color, 
+            background_type, 
+            show_status, 
+            is_compact,
+            width=width,
+            height=height
+        )
 
     resp = Response(svg, mimetype="image/svg+xml")
     resp.headers["Cache-Control"] = "s-maxage=1"

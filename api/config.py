@@ -334,6 +334,30 @@ def validate_background_type(bg_type: str, default: str) -> str:
     return default
 
 
+def validate_int(value: any, default: int, min_val: int | None = None, max_val: int | None = None) -> int:
+    """
+    Validate and sanitize integer parameters.
+
+    Args:
+        value: The value to validate (typically from request.args)
+        default: Default value if validation fails
+        min_val: Optional minimum value
+        max_val: Optional maximum value
+
+    Returns:
+        Valid integer
+    """
+    try:
+        val = int(value)
+        if min_val is not None:
+            val = max(min_val, val)
+        if max_val is not None:
+            val = min(max_val, val)
+        return val
+    except (ValueError, TypeError):
+        return default
+
+
 # Global config instances (immutable)
 spotify_config = SpotifyConfig()
 app_config = AppConfig()

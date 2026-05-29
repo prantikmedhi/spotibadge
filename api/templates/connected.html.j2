@@ -253,6 +253,14 @@
               <label for="backgroundColor">Background Hex</label>
               <input id="backgroundColor" type="text" value="181414" maxlength="6">
             </div>
+            <div class="control-item">
+              <label for="width">Width (px)</label>
+              <input id="width" type="text" value="540">
+            </div>
+            <div class="control-item">
+              <label for="height">Height (px)</label>
+              <input id="height" type="text" value="135">
+            </div>
           </div>
 
           <div style="display: grid; gap: 16px; margin-top: 24px;">
@@ -324,6 +332,8 @@
       backgroundType: document.querySelector("#backgroundType"),
       borderColor: document.querySelector("#borderColor"),
       backgroundColor: document.querySelector("#backgroundColor"),
+      width: document.querySelector("#width"),
+      height: document.querySelector("#height"),
       showStatus: document.querySelector("#showStatus"),
       compact: document.querySelector("#compact"),
     };
@@ -337,6 +347,14 @@
     function updateMarkdown() {
       const type = controls.widgetType.value;
       const isTop = type === "top-track" || type === "top-artist";
+      const isCompact = controls.compact.checked;
+      
+      // Update default width/height based on compact mode if not manually changed
+      // (Simple heuristic: if it's the default value, update it)
+      if (isCompact && controls.width.value === "540") controls.width.value = "400";
+      if (!isCompact && controls.width.value === "400") controls.width.value = "540";
+      if (isCompact && controls.height.value === "135") controls.height.value = "80";
+      if (!isCompact && controls.height.value === "80") controls.height.value = "135";
       
       // Show/hide time range selector
       timeRangeContainer.style.display = isTop ? "grid" : "none";
@@ -345,8 +363,14 @@
       params.set("background_type", controls.backgroundType.value);
       params.set("border_color", cleanHex(controls.borderColor.value, "ffffff"));
       params.set("background_color", cleanHex(controls.backgroundColor.value, "181414"));
+      
+      const w = parseInt(controls.width.value);
+      const h = parseInt(controls.height.value);
+      if (!isNaN(w) && w > 0) params.set("width", w);
+      if (!isNaN(h) && h > 0) params.set("height", h);
+
       if (controls.showStatus.checked) params.set("show_status", "true");
-      if (controls.compact.checked) params.set("compact", "true");
+      if (isCompact) params.set("compact", "true");
       if (isTop) params.set("time_range", controls.timeRange.value);
 
       const queryStr = params.toString();
