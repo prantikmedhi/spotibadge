@@ -270,18 +270,18 @@
               </select>
             </div>
             <div class="control-item">
-              <label>Widget Size</label>
-              <div class="segmented-control" role="radiogroup" aria-label="Widget Size">
+              <label>Content Size</label>
+              <div class="segmented-control" role="radiogroup" aria-label="Content Size">
                 <label>
-                  <input type="radio" name="widgetSize" value="small">
+                  <input type="radio" name="contentSize" value="small">
                   <span>Small</span>
                 </label>
                 <label>
-                  <input type="radio" name="widgetSize" value="medium" checked>
+                  <input type="radio" name="contentSize" value="medium" checked>
                   <span>Medium</span>
                 </label>
                 <label>
-                  <input type="radio" name="widgetSize" value="large">
+                  <input type="radio" name="contentSize" value="large">
                   <span>Large</span>
                 </label>
               </div>
@@ -400,12 +400,7 @@
       showStatus: document.querySelector("#showStatus"),
     };
     const timeRangeContainer = document.querySelector("#timeRangeContainer");
-    const widgetSizeControls = document.querySelectorAll('input[name="widgetSize"]');
-    const sizePresets = {
-      small: { width: "400", height: "80" },
-      medium: { width: "540", height: "135" },
-      large: { width: "650", height: "165" },
-    };
+    const contentSizeControls = document.querySelectorAll('input[name="contentSize"]');
 
     function cleanHex(value, fallback) {
       const normalized = value.trim().replace("#", "");
@@ -416,13 +411,13 @@
     function updateMarkdown() {
       const type = controls.widgetType.value;
       const isTop = type === "top-track" || type === "top-artist";
-      const widgetSize = document.querySelector('input[name="widgetSize"]:checked').value;
+      const contentSize = document.querySelector('input[name="contentSize"]:checked').value;
       
       // Show/hide time range selector
       timeRangeContainer.style.display = isTop ? "grid" : "none";
 
       const params = new URLSearchParams();
-      params.set("size", widgetSize);
+      params.set("content_size", contentSize);
       params.set("background_type", controls.backgroundType.value);
       params.set("border_color", cleanHex(controls.borderColor.value, "ffffff"));
       params.set("background_color", cleanHex(controls.backgroundColor.value, "181414"));
@@ -468,12 +463,9 @@
       control.addEventListener("input", updateMarkdown);
       control.addEventListener("change", updateMarkdown);
     });
-    widgetSizeControls.forEach((control) => {
+    contentSizeControls.forEach((control) => {
       control.addEventListener("change", () => {
         if (!control.checked) return;
-        const preset = sizePresets[control.value];
-        controls.width.value = preset.width;
-        controls.height.value = preset.height;
         updateMarkdown();
       });
     });

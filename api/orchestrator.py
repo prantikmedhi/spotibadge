@@ -12,6 +12,7 @@ import os
 import random
 import secrets
 import time
+from dataclasses import replace
 from io import BytesIO
 from typing import Any, Optional, Tuple
 
@@ -25,7 +26,6 @@ from .config import (
     app_config,
     ColorPalette,
     compact_svg_config,
-    large_svg_config,
     svg_config,
     template_config,
     validate_background_type,
@@ -44,10 +44,31 @@ from .storage import ConnectedUser, generate_public_id, get_user, save_user, upd
 app = Flask(__name__)
 app.secret_key = app_config.secret_key
 
-WIDGET_SIZE_CONFIGS = {
-    "small": compact_svg_config,
+CONTENT_SIZE_CONFIGS = {
+    "small": replace(
+        svg_config,
+        album_art_size=92,
+        art_content_gap=10,
+        eq_spacer_height=26,
+        eq_spacer_margin_top=8,
+        artist_margin_top=1,
+        eq_bar_count=64,
+        eq_bar_max_height=26,
+        content_column_height=72,
+        song_font_size=18,
+        artist_font_size=13,
+    ),
     "medium": svg_config,
-    "large": large_svg_config,
+    "large": replace(
+        svg_config,
+        eq_spacer_height=50,
+        eq_spacer_margin_top=14,
+        eq_bar_count=88,
+        eq_bar_max_height=50,
+        content_column_height=106,
+        song_font_size=26,
+        artist_font_size=19,
+    ),
 }
 
 
@@ -387,7 +408,7 @@ def make_svg(
     song_color: Optional[str] = None,
     artist_color: Optional[str] = None,
     status_color: Optional[str] = None,
-    widget_size: str = "medium",
+    content_size: str = "medium",
 ) -> str:
     """
     Generate SVG widget from normalized track data.
@@ -408,9 +429,7 @@ def make_svg(
     Returns:
         Rendered SVG template string
     """
-    # Select configuration based on mode. Keep compact as a backwards-compatible
-    # alias for the new small size parameter.
-    cfg = WIDGET_SIZE_CONFIGS.get(widget_size, svg_config)
+    cfg = CONTENT_SIZE_CONFIGS.get(content_size, svg_config)
     if is_compact:
         cfg = compact_svg_config
     
@@ -603,10 +622,10 @@ def make_list_svg(
     song_color: Optional[str] = None,
     artist_color: Optional[str] = None,
     status_color: Optional[str] = None,
-    widget_size: str = "medium",
+    content_size: str = "medium",
 ) -> str:
     """Generate SVG widget for a list of tracks/artists."""
-    cfg = WIDGET_SIZE_CONFIGS.get(widget_size, svg_config)
+    cfg = CONTENT_SIZE_CONFIGS.get(content_size, svg_config)
     if is_compact:
         cfg = compact_svg_config
     
@@ -640,7 +659,7 @@ def make_list_svg(
         title_font_size = 14
         track_font_size = 14
         artist_font_size = 12
-    elif cfg is large_svg_config:
+    elif content_size == "large" and cfg is not compact_svg_config:
         item_height = 72
         header_height = 52
         padding = 26
@@ -983,8 +1002,8 @@ def _generate_widget_response(public_id: str, fetch_type: str, args: Any) -> Res
     # Optional parameters
     show_status = args.get("show_status", "").lower() in ("true", "1", "yes")
     is_compact = args.get("compact", "").lower() in ("true", "1", "yes")
-    raw_size = args.get("size", "medium").lower()
-    widget_size = raw_size if raw_size in WIDGET_SIZE_CONFIGS else "medium"
+    raw_content_size = args.get("content_size", args.get("size", "medium")).lower()
+    content_size = raw_content_size if raw_content_size in CONTENT_SIZE_CONFIGS else "medium"
     time_range = args.get("time_range", "short_term")
 
     _user, track_data, error = load_connected_track(public_id, fetch_type, time_range)
@@ -1005,7 +1024,7 @@ def _generate_widget_response(public_id: str, fetch_type: str, args: Any) -> Res
             song_color=song_color,
             artist_color=artist_color,
             status_color=status_color,
-            widget_size=widget_size,
+            content_size=content_size,
         )
     else:
         # Override status text for specific widgets if show_status is requested
@@ -1030,7 +1049,7 @@ def _generate_widget_response(public_id: str, fetch_type: str, args: Any) -> Res
             song_color=song_color,
             artist_color=artist_color,
             status_color=status_color,
-            widget_size=widget_size,
+            content_size=content_size,
         )
 
     resp = Response(svg, mimetype="image/svg+xml")
