@@ -8,7 +8,7 @@ SpotiBadge generates dynamic Spotify README badges for GitHub profiles, portfoli
 Show your real-time now playing track, recently played songs, top tracks, or top artists as a customizable SVG widget.
 No database, no trackers, just your music.
 
-> *Placeholder: `![SpotiBadge Preview](docs/images/hero-preview.png)`*
+> *Placeholder: `![SpotiBadge Preview](assets/hero.jpg)`*
 
 </div>
 
